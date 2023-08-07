@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Crypto Currency Charts</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/fontawesome/css/font-awesome.min.css}"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .invalid-feedback {
+          font-size: .75rem;
+        }
+    </style>
+</head>
+<body>
+<article class="container">
+    <header class="row mt-3 mb-3">
+        <section class="justify-content-center align-items-center d-flex col-sm-12">
+            <span class="fa fa-btc fa-5x" aria-hidden="true"></span>
+            &nbsp;&nbsp;
+            <h1>Crypto Currency Charts</h1>
+        </section>
+    </header>
+    <section class="row mt-3 mb-3">
+        <div class="card offset-sm-2 col-sm-8">
+            <div class="card-body">
+                <h5 class="card-title">Settings</h5>
+                <form class="row" action="#" method="POST" th:action="@{/refresh}" th:object="${settings}">
+                    <section class="col-sm-6">
+                        <label for="cryptoCurrency" class="form-label">Crypto Currency:</label>
+                        <div class="input-group has-validation">
+                            <select class="form-select" aria-label="Crypto Currency" id="cryptoCurrency"
+                                    name="cryptoCurrency">
+                                <option
+                                        th:each="currency: ${#lists.sort(cryptoCurrencies)}"
+                                        th:selected="${currency.currencyCode == 'BTC'}"
+                                        th:value="${currency.currencyCode}"
+                                >
+                                    <span th:text="${currency.currencyName}"></span> (<span
+                                        th:text="${currency.currencyCode}"></span>)
+                                </option>
+                            </select>
+                        </div>
+                    </section>
+                    <section class="col-sm-6">
+                        <label for="physicalCurrency" class="form-label">Crypto Currency:</label>
+                        <div class="input-group has-validation">
+                            <select class="form-select" aria-label="Physical Currency" id="physicalCurrency"
+                                    name="physicalCurrency">
+                                <option
+                                        th:each="currency: ${physicalCurrencies}"
+                                        th:selected="${currency.currencyCode == 'USD'}"
+                                        th:value="${currency.currencyCode}"
+                                >
+                                    <span th:text="${currency.currencyName}"></span> (<span
+                                        th:text="${currency.currencyCode}"></span>)
+                                </option>
+                            </select>
+                        </div>
+                    </section>
+                    <section class="row mt-3">
+                        <section class="col-sm-12">
+                            <div class="form-check"
+                                 th:each="interval : ${T(de.brightslearning.currency.crypto.model.Interval).values()}">
+                                <input
+                                        class="form-check-input"
+                                        type="radio"
+                                        th:field="*{interval}"
+                                        th:value="${interval}"
+                                >
+                                <label
+                                        class="form-check-label"
+                                        th:for="${#ids.prev('interval')}"
+                                        th:text="${interval.displayValue}"
+                                ></label>
+                            </div>
+                        </section>
+                    </section>
+                    <section class="row mt-3">
+                        <section class="col-sm-12">
+                            <label for="txtApiKey" class="form-label">API-Key:</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text"><span class="fa fa-key" aria-hidden="true"></span></span>
+                                <input type="text" id="txtApiKey" th:field="*{apiKey}"
+                                       class="form-control"
+                                       placeholder="API-Key"
+                                       aria-label="API-Key"
+                                />
+                            </div>
+                        </section>
+                    </section>
+                    <section class="row mt-3">
+                        <section class="col-sm-12">
+                            <div class="form-switch">
+                                <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        value=""
+                                        id="chkDemoKey"
+                                        onchange="useDemoApiKey();">
+                                <label class="form-check-label" for="chkDemoKey">
+                                    Use "demo" API-Key
+                                </label>
+                            </div>
+                        </section>
+                    </section>
+                    <section class="row mt-3">
+                        <section class="col-sm-12">
+                            <button type="submit" class="btn btn-outline-success me-2"><span class="fa fa-check"></span>&nbsp;Convert
+                            </button>
+                        </section>
+                    </section>
+                </form>
+            </div>
+        </div>
+    </section>
+    <section class="row mt-3 mb-3" th:if="${source != null}">
+        <div class="col-sm-12">
+            <canvas id="stockCharts"></canvas>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.3/chart.umd.min.js"
+                    integrity="sha512-mCXCsj30LV3PLPTIuWjZQX84qiQ56EgBZOsPUA+ya5mWmAb8Djdxa976zWzxquOwkh0TxI12KA4eniKpY3yKhA=="
+                    crossorigin="anonymous" referrerpolicy="no-referrer">
+
+            </script>
+            <script>
+                const context = document.getElementById("stockCharts");
+                const chartConfiguration = {
+                    type: 'line',
+                    options: {
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        }
+                    },
+                    data: {
+                        labels: [],
+                        datasets: []
+                    }
+                };
+
+                const dataSource = [(${source})];
+
+                const high = {
+                    label: 'High',
+                    data: Object.values(dataSource).map((row) => (row.high))
+                }
+
+                const low = {
+                    label: 'Low',
+                    data: Object.values(dataSource).map((row) => (row.low))
+                }
+
+                chartConfiguration.data.labels = Object.keys(dataSource);
+                chartConfiguration.data.datasets.push(high);
+                chartConfiguration.data.datasets.push(low);
+
+                const cryptChart = new Chart(context, chartConfiguration);
+            </script>
+        </div>
+    </section>
+</article>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+    function useDemoApiKey() {
+        const txtApiKey = document.getElementById("txtApiKey");
+        const chkDemoKey = document.getElementById("chkDemoKey");
+
+        if (chkDemoKey.checked) {
+            txtApiKey.setAttribute("readonly", "readonly");
+            txtApiKey.value = "demo";
+
+            return;
+        }
+
+        txtApiKey.removeAttribute("readonly");
+        txtApiKey.value = "";
+
+        return;
+    }
+</script>
+</body>
+</html>
