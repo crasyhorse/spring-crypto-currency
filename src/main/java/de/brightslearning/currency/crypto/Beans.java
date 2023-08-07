@@ -9,6 +9,7 @@ import de.brightslearning.currency.crypto.model.Settings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,7 +17,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+@Configuration
 public class Beans {
+
+    @Value("classpath:/digital_currency_list.csv")
+    Resource digitalCurrencyList;
+
+    @Value("classpath:/physical_currency_list.csv")
+    Resource physicalCurrencyList;
 
     private final CsvSchema schema;
 
@@ -25,6 +33,21 @@ public class Beans {
     public Beans() {
         mapper = new CsvMapper();
         schema = CsvSchema.builder().setSkipFirstDataRow(true).setUseHeader(false).addColumn("currency code").addColumn("currency name").build();
+    }
+
+    @Bean
+    public Settings settings() {
+        return new Settings("BTC", "EUR", Interval.WEEKLY);
+    }
+
+    @Bean
+    public List<Currency> cryptoCurrencies() {
+        return createCurrencieList(digitalCurrencyList);
+    }
+
+    @Bean
+    public List<Currency> physicalCurrencies() {
+        return createCurrencieList(physicalCurrencyList);
     }
 
     @Bean

@@ -21,6 +21,9 @@ public class AlphaVantageRESTConsumerService {
 
     private final RestTemplate restTemplate;
 
+    @Value("${alphavantage.rest.api.url}")
+    private String url;
+
     @Autowired
     public AlphaVantageRESTConsumerService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
