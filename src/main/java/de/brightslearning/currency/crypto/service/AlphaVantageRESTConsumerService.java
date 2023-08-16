@@ -37,7 +37,8 @@ public class AlphaVantageRESTConsumerService {
             module.addDeserializer(Entity.class, new EntityDeserializer(Entity.class, settings));
             mapper.registerModule(module);
 
-            JsonNode timeSeries = mapper.readTree(json).path("Time Series (Digital Currency Weekly)");
+            String searchString = String.format("Time Series (Digital Currency %s)", settings.getInterval().getDisplayValue());
+            JsonNode timeSeries = mapper.readTree(json).path(searchString);
 
             for (Iterator<Map.Entry<String, JsonNode>> it = timeSeries.fields(); it.hasNext(); ) {
                 Map.Entry<String, JsonNode> entityNode = it.next();
